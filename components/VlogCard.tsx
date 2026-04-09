@@ -1,10 +1,12 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { useState } from "react";
 import type { VlogCardProps } from "@/types/vlog";
 
 export default function VlogCard({
+  id,
   image,
   location,
   description,
@@ -110,7 +112,10 @@ export default function VlogCard({
             transition={{ duration: 0.3, delay: 0.15 }}
             className="mt-4"
           >
-            <span className="inline-flex items-center gap-2 text-orange-500 text-sm font-semibold group-hover:gap-3 transition-all">
+            <Link
+              href={`/vlogs/${id}`}
+              className="inline-flex items-center gap-2 text-orange-500 text-sm font-semibold group-hover:gap-3 transition-all"
+            >
               Explore
               <svg
                 className="w-4 h-4 transition-transform group-hover:translate-x-1"
@@ -125,7 +130,7 @@ export default function VlogCard({
                   d="M17 8l4 4m0 0l-4 4m4-4H3"
                 />
               </svg>
-            </span>
+            </Link>
           </motion.div>
         </div>
 

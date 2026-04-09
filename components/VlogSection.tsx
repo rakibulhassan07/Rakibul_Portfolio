@@ -112,6 +112,7 @@ export default function VlogSection() {
               {visiblePosts.map((post, index) => (
                 <VlogCard
                   key={post.id}
+                  id={post.id}
                   image={post.image}
                   location={post.location}
                   description={post.description}

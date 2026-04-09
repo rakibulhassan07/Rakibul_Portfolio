@@ -5,11 +5,13 @@ export interface VlogPost {
   location: string;
   description: string;
   date: string;
+  galleryImages?: string[];
   tall?: boolean;
   created_at?: string;
 }
 
 export interface VlogCardProps {
+  id: string;
   image: string;
   location: string;
   description: string;

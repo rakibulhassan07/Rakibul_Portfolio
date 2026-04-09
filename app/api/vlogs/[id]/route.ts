@@ -2,10 +2,66 @@ import { NextRequest, NextResponse } from "next/server";
 import { isValidPassword } from "@/lib/adminAuth";
 import { createServerClient } from "@/utils/supabase/server";
 
+const normalizeGalleryImages = (galleryImages?: string[]) => {
+  return (galleryImages ?? [])
+    .map((image) => image.trim())
+    .filter(Boolean)
+    .slice(0, 6);
+};
+
+const isMissingVlogImagesTableError = (error: { message?: string } | null) => {
+  if (!error?.message) return false;
+  return (
+    error.message.includes("public.vlog_images") &&
+    error.message.toLowerCase().includes("schema cache")
+  );
+};
+
 const isAuthorized = (request: NextRequest) => {
   const adminPassword = request.headers.get("x-admin-password") || "";
   return isValidPassword(adminPassword);
 };
+
+export async function GET(
+  _request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id } = await context.params;
+  const supabase = createServerClient();
+
+  const { data, error } = await supabase
+    .from("vlogs")
+    .select("id, location, description, image_url, visit_date, tall, created_at")
+    .eq("id", id)
+    .single();
+
+  if (error || !data) {
+    return NextResponse.json({ error: "Tour not found" }, { status: 404 });
+  }
+
+  const { data: galleryRows, error: galleryError } = await supabase
+    .from("vlog_images")
+    .select("image_url, position")
+    .eq("vlog_id", id)
+    .order("position", { ascending: true });
+
+  if (galleryError && !isMissingVlogImagesTableError(galleryError)) {
+    return NextResponse.json({ error: galleryError.message }, { status: 500 });
+  }
+
+  return NextResponse.json({
+    data: {
+      id: String(data.id),
+      location: data.location,
+      description: data.description,
+      image: data.image_url,
+      date: data.visit_date,
+      galleryImages: (galleryRows ?? []).map((row) => row.image_url),
+      tall: Boolean(data.tall),
+      created_at: data.created_at,
+    },
+  });
+}
 
 export async function PUT(
   request: NextRequest,
@@ -24,6 +80,7 @@ export async function PUT(
       image?: string;
       date?: string;
       tall?: boolean;
+      galleryImages?: string[];
     };
 
     if (!body.location || !body.description || !body.image) {
@@ -51,6 +108,31 @@ export async function PUT(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    const galleryImages = normalizeGalleryImages(body.galleryImages);
+
+    const { error: deleteGalleryError } = await supabase
+      .from("vlog_images")
+      .delete()
+      .eq("vlog_id", id);
+
+    if (deleteGalleryError && !isMissingVlogImagesTableError(deleteGalleryError)) {
+      return NextResponse.json({ error: deleteGalleryError.message }, { status: 500 });
+    }
+
+    if (galleryImages.length > 0) {
+      const { error: galleryError } = await supabase.from("vlog_images").insert(
+        galleryImages.map((imageUrl, index) => ({
+          vlog_id: id,
+          image_url: imageUrl,
+          position: index + 1,
+        }))
+      );
+
+      if (galleryError && !isMissingVlogImagesTableError(galleryError)) {
+        return NextResponse.json({ error: galleryError.message }, { status: 500 });
+      }
+    }
+
     return NextResponse.json({
       data: {
         id: String(data.id),
@@ -58,6 +140,7 @@ export async function PUT(
         description: data.description,
         image: data.image_url,
         date: data.visit_date,
+        galleryImages,
         tall: Boolean(data.tall),
         created_at: data.created_at,
       },
@@ -77,6 +160,12 @@ export async function DELETE(
 
   const { id } = await context.params;
   const supabase = createServerClient({ admin: true });
+
+  const { error: galleryError } = await supabase.from("vlog_images").delete().eq("vlog_id", id);
+  if (galleryError && !isMissingVlogImagesTableError(galleryError)) {
+    return NextResponse.json({ error: galleryError.message }, { status: 500 });
+  }
+
   const { error } = await supabase.from("vlogs").delete().eq("id", id);
 
   if (error) {

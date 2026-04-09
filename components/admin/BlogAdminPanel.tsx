@@ -8,6 +8,7 @@ type FormState = {
   description: string;
   image: string;
   date: string;
+  galleryImages: string[];
 };
 
 const initialForm: FormState = {
@@ -15,6 +16,7 @@ const initialForm: FormState = {
   description: "",
   image: "",
   date: "",
+  galleryImages: ["", "", "", "", "", ""],
 };
 
 const toDateInputValue = (value?: string) => {
@@ -112,14 +114,40 @@ export default function BlogAdminPanel({ adminPassword, onLogout }: BlogAdminPan
   };
 
   const onEdit = (post: VlogPost) => {
-    setEditingId(post.id);
-    setForm({
-      location: post.location,
-      description: post.description,
-      image: post.image,
-      date: toDateInputValue(post.date),
-    });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const loadEditData = async () => {
+      setMessage("");
+      try {
+        const res = await fetch(`/api/vlogs/${post.id}`, { cache: "no-store" });
+        const body = (await res.json().catch(() => ({}))) as {
+          data?: VlogPost;
+          error?: string;
+        };
+
+        if (!res.ok || !body.data) {
+          setMessage(body.error ?? "Failed to load post details");
+          return;
+        }
+
+        const gallery = [...(body.data.galleryImages ?? [])].slice(0, 6);
+        while (gallery.length < 6) {
+          gallery.push("");
+        }
+
+        setEditingId(body.data.id);
+        setForm({
+          location: body.data.location,
+          description: body.data.description,
+          image: body.data.image,
+          date: toDateInputValue(body.data.date),
+          galleryImages: gallery,
+        });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } catch {
+        setMessage("Failed to load post details");
+      }
+    };
+
+    loadEditData();
   };
 
   const onDelete = async (id: string) => {
@@ -194,6 +222,24 @@ export default function BlogAdminPanel({ adminPassword, onLogout }: BlogAdminPan
               placeholder="Description"
               required
             />
+
+            <div className="md:col-span-2 grid grid-cols-1 gap-3 md:grid-cols-2">
+              {form.galleryImages.map((value, index) => (
+                <input
+                  key={index}
+                  value={value}
+                  onChange={(e) =>
+                    setForm((prev) => {
+                      const nextImages = [...prev.galleryImages];
+                      nextImages[index] = e.target.value;
+                      return { ...prev, galleryImages: nextImages };
+                    })
+                  }
+                  className="rounded-lg border border-gray-800 bg-black/60 px-4 py-3 outline-none focus:border-orange-500"
+                  placeholder={`Tour image ${index + 1} URL`}
+                />
+              ))}
+            </div>
 
             <div className="md:col-span-2 flex flex-wrap gap-3">
               <button

@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { isValidPassword } from "@/lib/adminAuth";
 import { createServerClient } from "@/utils/supabase/server";
 
+const normalizeGalleryImages = (galleryImages?: string[]) => {
+  return (galleryImages ?? [])
+    .map((image) => image.trim())
+    .filter(Boolean)
+    .slice(0, 6);
+};
+
+const isMissingVlogImagesTableError = (error: { message?: string } | null) => {
+  if (!error?.message) return false;
+  return (
+    error.message.includes("public.vlog_images") &&
+    error.message.toLowerCase().includes("schema cache")
+  );
+};
+
 export async function GET() {
   const supabase = createServerClient();
   const { data, error } = await supabase
@@ -40,6 +55,7 @@ export async function POST(request: NextRequest) {
       image?: string;
       date?: string;
       tall?: boolean;
+      galleryImages?: string[];
     };
 
     if (!body.location || !body.description || !body.image) {
@@ -73,6 +89,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const galleryImages = normalizeGalleryImages(body.galleryImages);
+    if (galleryImages.length > 0) {
+      const { error: galleryError } = await supabase.from("vlog_images").insert(
+        galleryImages.map((imageUrl, index) => ({
+          vlog_id: data.id,
+          image_url: imageUrl,
+          position: index + 1,
+        }))
+      );
+
+      if (galleryError && !isMissingVlogImagesTableError(galleryError)) {
+        return NextResponse.json({ error: galleryError.message }, { status: 500 });
+      }
+    }
+
     return NextResponse.json({
       data: {
         id: String(data.id),
@@ -80,6 +111,7 @@ export async function POST(request: NextRequest) {
         description: data.description,
         image: data.image_url,
         date: data.visit_date,
+        galleryImages,
         tall: Boolean(data.tall),
         created_at: data.created_at,
       },

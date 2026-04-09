@@ -191,6 +191,7 @@ export default function Vlog() {
                       onMouseLeave={() => setIsPaused(false)}
                     >
                       <VlogCard
+                        id={vlog.id}
                         image={vlog.image}
                         location={vlog.location}
                         description={vlog.description}

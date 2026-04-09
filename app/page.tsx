@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import About from "@/components/About";
@@ -16,6 +16,20 @@ import AnimatedBackground from "@/components/AnimatedBackground";
 export default function Home() {
   const [showLoading, setShowLoading] = useState(true);
   const [showSplash, setShowSplash] = useState(false);
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const fromVlogDetails = url.searchParams.get("fromVlogDetails") === "1";
+
+    if (!fromVlogDetails) return;
+
+    setShowLoading(false);
+    setShowSplash(false);
+
+    url.searchParams.delete("fromVlogDetails");
+    const nextUrl = `${url.pathname}${url.search}${url.hash}`;
+    window.history.replaceState(null, "", nextUrl);
+  }, []);
 
   const handleLoadingComplete = () => {
     setShowLoading(false);
