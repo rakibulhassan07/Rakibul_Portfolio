@@ -3,7 +3,7 @@ import "./globals.css";
 import CustomCursor from "@/components/CustomCursor";
 
 export const metadata: Metadata = {
-  title: "Rakibul Hassan - Portfolio",
+  title: "RAKIBUL HASSAN",
   description: "Modern portfolio website showcasing creative work",
   icons: {
     icon: "https://i.ibb.co/pj4Rtsyk/jpg.jpg",
