@@ -71,7 +71,7 @@ export default function About() {
 
                   <div className="rounded-xl border border-gray-800 bg-gray-950/60 px-4 py-3">
                     <p className="text-[11px] tracking-[0.2em] text-orange-300 uppercase">Quick Identity</p>
-                    <p className="text-[#c9b9a1] text-sm mt-1">Computer Science Undergraduate Student</p>
+                    <p className="text-[#c9b9a1] text-sm mt-1">Software Engineer & Systems Analyst</p>
                   </div>
                 </div>
 
