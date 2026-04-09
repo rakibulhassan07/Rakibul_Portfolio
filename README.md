@@ -72,3 +72,20 @@ Add these in Azure App Service -> Configuration -> Application settings:
 
 - The app uses Next.js standalone output for production.
 - After deploy, restart the App Service once to apply environment variables.
+
+### GitHub Actions Setup (For Forked Repositories)
+
+If someone forks this repo and deploys from their own Azure subscription, they must add these repository secrets in their fork:
+
+- AZURE_WEBAPP_NAME
+- AZURE_WEBAPP_PUBLISH_PROFILE
+
+How to get AZURE_WEBAPP_PUBLISH_PROFILE:
+
+1. Azure Portal -> Web App -> Get publish profile
+2. Copy the downloaded XML content
+3. GitHub (fork repo) -> Settings -> Secrets and variables -> Actions -> New repository secret
+
+Set Azure App Service startup command to:
+
+- node server.js
