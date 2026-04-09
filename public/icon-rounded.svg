@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <clipPath id="circleClip">
+      <circle cx="256" cy="256" r="220" />
+    </clipPath>
+    <radialGradient id="ringGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fb923c" stop-opacity="0.35" />
+      <stop offset="70%" stop-color="#f97316" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#f97316" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <rect width="512" height="512" fill="transparent" />
+  <circle cx="256" cy="256" r="238" fill="url(#ringGlow)" />
+
+  <image
+    href="https://i.ibb.co/pj4Rtsyk/jpg.jpg"
+    x="36"
+    y="36"
+    width="440"
+    height="440"
+    clip-path="url(#circleClip)"
+    preserveAspectRatio="xMidYMid slice"
+  />
+
+  <circle cx="256" cy="256" r="220" fill="none" stroke="#fb923c" stroke-opacity="0.85" stroke-width="10" />
+</svg>
