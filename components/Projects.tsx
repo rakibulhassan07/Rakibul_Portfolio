@@ -21,21 +21,38 @@ export default function Projects() {
       link: "https://github.com/rakibulhassan07/Fluentask",
     },
     {
-      title: "Portfolio Website",
+      title: "The Pizza Garden - Ordering & Admin System",
       description:
-        "Modern, animated portfolio website with smooth scrolling, interactive components, and responsive design.",
-      image: "https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?w=800&h=600&fit=crop",
-      tags: ["Next.js", "Framer Motion", "Tailwind CSS"],
-      link: "#",
+        "Pizza ordering platform with secure auth, persistent cart, admin dashboard, and real-time order management.",
+      image: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&h=600&fit=crop",
+      tags: ["React", "Vite", "Express.js", "MongoDB", "Firebase", "React Query"],
+      link: "https://github.com/rakibulhassan07/The_Pizza_Garden",
     },
     {
-      title: "Weather Dashboard",
+      title: "Rakibul Portfolio - Personal Brand Website",
       description:
-        "Real-time weather monitoring dashboard with interactive maps, forecasts, and historical data analysis.",
-      image: "https://images.unsplash.com/photo-1504608524841-42fe6f032b4b?w=800&h=600&fit=crop",
-      tags: ["React", "API Integration", "Chart.js"],
-      link: "#",
+        "Modern portfolio featuring cinematic hero animations, project showcase, vlog section, admin page, and fully responsive UI.",
+      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=800&h=600&fit=crop",
+      tags: ["Next.js", "TypeScript", "Tailwind CSS", "Framer Motion", "GSAP"],
+      link: "https://github.com/rakibulhassan07/Rakibul_Portfolio",
     },
+    {
+      title: "Pomodoro Timer - Focus Session App",
+      description:
+        "Productivity timer app for focused work sessions with break cycles and a clean, distraction-free interface.",
+      image: "/pomodoro-timer-card.svg",
+      tags: ["JavaScript", "Timer Logic", "Productivity", "Responsive UI"],
+      link: "https://github.com/rakibulhassan07/Pomodoro-Timer",
+    },
+    {
+      title: "AutoTrack - Multi-Page Website Folder",
+      description:
+        "AutoTrack project folder containing website pages with navigation flow across feature modules.",
+      image: "https://images.unsplash.com/photo-1502877338535-766e1452684a?w=800&h=600&fit=crop",
+      tags: ["HTML", "Website", "Multi-Page", "Frontend"],
+      link: "https://github.com/rakibulhassan07/-2D_Car_Game/tree/main/Desktop/AutoTrack",
+    },
+    
     {
       title: "Social Media App",
       description:
@@ -44,14 +61,7 @@ export default function Projects() {
       tags: ["Next.js", "Firebase", "TypeScript"],
       link: "#",
     },
-    {
-      title: "AI Content Generator",
-      description:
-        "AI-powered content creation tool leveraging GPT models for generating articles, social posts, and marketing copy.",
-      image: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=600&fit=crop",
-      tags: ["Python", "OpenAI", "React", "FastAPI"],
-      link: "#",
-    },
+   
   ];
   return (
     <section id="projects" className="relative min-h-screen overflow-hidden bg-black py-20">
@@ -67,7 +77,7 @@ export default function Projects() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
+          viewport={{ once: false, amount: 0.2 }}
         >
           <div className="mb-3 flex justify-center">
             <span className="rounded-full border border-orange-500/35 bg-orange-500/10 px-4 py-1 text-xs tracking-[0.22em] text-[#c9b9a1] uppercase">
@@ -92,7 +102,7 @@ export default function Projects() {
                 initial={{ opacity: 0, y: 24, rotate: index % 2 === 0 ? -1.2 : 1.2 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, delay: index * 0.08 }}
-                viewport={{ once: true }}
+                viewport={{ once: false, amount: 0.25 }}
                 whileHover={{ y: -8, rotate: 0 }}
                 className="group overflow-hidden rounded-2xl border border-gray-800 bg-gray-950/65 backdrop-blur-sm transition-all hover:border-orange-500/50 hover:shadow-[0_16px_45px_rgba(249,115,22,0.18)]"
               >

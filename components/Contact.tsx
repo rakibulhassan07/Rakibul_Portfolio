@@ -108,7 +108,7 @@ export default function Contact() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
+          viewport={{ once: false }}
         >
           <div className="mb-3 flex justify-center">
             <span className="rounded-full border border-orange-500/30 bg-orange-500/10 px-4 py-1 text-xs tracking-[0.22em] text-[#c9b9a1] uppercase">
@@ -133,7 +133,7 @@ export default function Contact() {
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
+              viewport={{ once: false }}
               className="rounded-2xl border border-gray-800 bg-gray-950/55 p-6 backdrop-blur-sm md:p-8"
             >
               <h3 className="mb-6 text-xl font-semibold text-[#c9b9a1]">Send a Message</h3>
@@ -221,7 +221,7 @@ export default function Contact() {
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
+              viewport={{ once: false }}
               className="space-y-6 rounded-2xl border border-gray-800 bg-gray-950/45 p-6 backdrop-blur-sm md:p-8"
             >
               <div>
@@ -290,7 +290,7 @@ export default function Contact() {
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.3 }}
-        viewport={{ once: true }}
+        viewport={{ once: false }}
         className="mx-auto mt-20 max-w-6xl border-t border-gray-800 pt-8 text-center text-[#b8a88a]"
       >
         <p>© 2026 Portfolio. All rights reserved. Built with Next.js & Framer Motion</p>

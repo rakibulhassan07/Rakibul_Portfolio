@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import VlogCard from "./VlogCard";
 import CinematicText from "./CinematicText";
 import type { VlogPost } from "@/types/vlog";
-import { vlogData } from "./Vlog";
 
 export default function VlogSection() {
   const [vlogPosts, setVlogPosts] = useState<VlogPost[]>([]);
@@ -16,14 +15,43 @@ export default function VlogSection() {
   const visiblePosts = showAllVlogs ? vlogPosts : vlogPosts.slice(0, initialVisibleCount);
 
   useEffect(() => {
-    setIsLoading(true);
-    setVlogPosts(
-      vlogData.map((post, index) => ({
-        ...post,
-        id: String(index + 1),
-      }))
-    );
-    setIsLoading(false);
+    let isMounted = true;
+
+    const loadVlogs = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch("/api/vlogs", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error("API unavailable");
+        }
+
+        const body = (await response.json()) as { data?: VlogPost[] };
+        const remotePosts = body.data ?? [];
+
+        if (!isMounted) return;
+
+        setVlogPosts(
+          remotePosts.map((post, index) => ({
+            ...post,
+            id: post.id || String(index + 1),
+            date: post.date || "Unknown Date",
+          }))
+        );
+      } catch {
+        if (!isMounted) return;
+        setVlogPosts([]);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadVlogs();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
@@ -53,7 +81,7 @@ export default function VlogSection() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              viewport={{ once: true }}
+              viewport={{ once: false }}
               className="text-[#c9b9a1] text-lg md:text-xl"
             >
               My Travel Moments
@@ -63,7 +91,7 @@ export default function VlogSection() {
               initial={{ scaleX: 0 }}
               whileInView={{ scaleX: 1 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              viewport={{ once: true }}
+              viewport={{ once: false }}
               className="h-1 w-24 bg-gradient-to-r from-orange-500 to-red-600 mx-auto mt-6 rounded-full"
             />
           </div>
@@ -95,13 +123,22 @@ export default function VlogSection() {
             </div>
           )}
 
+          {!isLoading && vlogPosts.length === 0 && (
+            <div className="rounded-2xl border border-dashed border-gray-700/70 bg-black/30 px-6 py-16 text-center">
+              <p className="text-lg font-semibold text-orange-400">No vlog posts yet</p>
+              <p className="mt-2 text-sm text-[#c9b9a1]">
+                Add posts from the admin panel at /rakib07 to show them here.
+              </p>
+            </div>
+          )}
+
           {/* View More Button - Only show if we have posts */}
           {!isLoading && vlogPosts.length > initialVisibleCount && !showAllVlogs && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.5 }}
-              viewport={{ once: true }}
+              viewport={{ once: false }}
               className="text-center mt-12"
             >
               <motion.button
@@ -124,7 +161,7 @@ export default function VlogSection() {
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.6 }}
-              viewport={{ once: true }}
+              viewport={{ once: false }}
               className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20 max-w-4xl mx-auto"
             >
               {[
@@ -138,7 +175,7 @@ export default function VlogSection() {
                   initial={{ opacity: 0, scale: 0.8 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.4, delay: 0.7 + index * 0.1 }}
-                  viewport={{ once: true }}
+                  viewport={{ once: false }}
                   className="text-center p-6 bg-gray-950/50 backdrop-blur-sm rounded-xl border border-gray-800 hover:border-orange-500/50 transition-all duration-300"
                 >
                   <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent mb-2">

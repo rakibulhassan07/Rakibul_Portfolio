@@ -19,7 +19,7 @@ export default function VlogCard({
       initial={{ opacity: 0, x: 70 }}
       whileInView={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.6, delay: index * 0.1 }}
-      viewport={{ once: true }}
+      viewport={{ once: false }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className="group relative overflow-hidden rounded-2xl cursor-pointer mb-6 break-inside-avoid"

@@ -48,8 +48,8 @@ export default function AdvancedCinematicText({
         scrollTrigger: {
           trigger: containerRef.current,
           start: triggerStart,
-          toggleActions: "play none none none",
-          once: true,
+          toggleActions: "play none none reset",
+          once: false,
         },
       };
 

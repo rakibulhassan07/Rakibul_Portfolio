@@ -92,7 +92,7 @@ export default function Skills() {
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: collectionIndex * 0.1 }}
-                viewport={{ once: true }}
+                viewport={{ once: false }}
                 whileHover={{ y: -6 }}
                 className="group relative overflow-hidden rounded-2xl border border-gray-800 bg-gray-950/65 p-6 backdrop-blur-sm transition-all duration-300 hover:border-orange-500/50 hover:shadow-[0_16px_45px_rgba(249,115,22,0.14)]"
               >
@@ -114,7 +114,7 @@ export default function Skills() {
                       initial={{ opacity: 0, y: 8 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25, delay: 0.05 * skillIndex }}
-                      viewport={{ once: true }}
+                      viewport={{ once: false }}
                       className="rounded-full border border-orange-900/70 bg-orange-950/30 px-3 py-1.5 text-sm font-medium text-[#c9b9a1]"
                     >
                       {skill}
@@ -129,7 +129,7 @@ export default function Skills() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.25 }}
-            viewport={{ once: true }}
+            viewport={{ once: false }}
             className="mx-auto mt-12 max-w-6xl rounded-2xl border border-gray-800 bg-gray-950/45 p-6 backdrop-blur-sm"
           >
             <h3 className="mb-6 text-center text-xl font-bold text-[#c9b9a1]">
@@ -142,7 +142,7 @@ export default function Skills() {
                   initial={{ opacity: 0, scale: 0.8 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, delay: index * 0.05 }}
-                  viewport={{ once: true }}
+                  viewport={{ once: false }}
                   whileHover={{ scale: 1.1 }}
                   className="cursor-default rounded-full border border-gray-700 bg-black/35 px-4 py-2 text-sm font-medium text-[#c9b9a1] transition-colors hover:border-orange-500"
                 >

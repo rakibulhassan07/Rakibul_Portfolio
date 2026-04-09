@@ -42,7 +42,7 @@ export default function Academic() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
+          viewport={{ once: false }}
         >
           <h2 className="mb-5 text-center text-4xl font-bold md:text-5xl">
             <span className="bg-gradient-to-r from-orange-500 to-red-600 bg-clip-text text-transparent">
@@ -83,7 +83,7 @@ export default function Academic() {
                     initial={{ opacity: 0, x: -30 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.55, delay: index * 0.15 }}
-                    viewport={{ once: true }}
+                    viewport={{ once: false }}
                     className="relative ml-10 rounded-2xl border border-gray-800/90 bg-gray-950/70 p-6 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/45 hover:shadow-[0_10px_35px_rgba(249,115,22,0.18)] md:p-8"
                   >
                     <span className="absolute -left-[34px] top-8 flex h-4 w-4 items-center justify-center rounded-full border-2 border-orange-500 bg-black shadow-[0_0_0_6px_rgba(249,115,22,0.15)]">
