@@ -41,9 +41,35 @@ jobs:
             cp -r public deploy/public
           fi
 
-      - name: Deploy to Azure Web App
+      - name: Validate Azure deployment secrets
+        run: |
+          if [ -z "${{ secrets.AZURE_WEBAPP_NAME }}" ]; then
+            echo "Missing required secret: AZURE_WEBAPP_NAME"
+            exit 1
+          fi
+
+          if [ -z "${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}" ] && [ -z "${{ secrets.AZURE_CREDENTIALS }}" ]; then
+            echo "Missing deployment credentials. Set AZURE_WEBAPP_PUBLISH_PROFILE or AZURE_CREDENTIALS."
+            exit 1
+          fi
+
+      - name: Azure Login (service principal fallback)
+        if: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE == '' && secrets.AZURE_CREDENTIALS != '' }}
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Web App (publish profile)
+        if: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE != '' }}
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: deploy
+
+      - name: Deploy to Azure Web App (Azure login)
+        if: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE == '' && secrets.AZURE_CREDENTIALS != '' }}
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
           package: deploy
