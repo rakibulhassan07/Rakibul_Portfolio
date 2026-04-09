@@ -49,3 +49,26 @@ Portfolio
 7. Open http://localhost:3000 in your browser.
 
 If the port is busy, stop the other process using that port and run npm run dev again.
+
+## Azure Hosting (Dynamic Web App)
+
+This project is configured for dynamic hosting on Azure App Service (Node.js), not Azure Static Web Apps.
+
+1. Build command: npm run build
+2. Startup command: npm run start:azure
+3. Runtime stack: Node.js 20 LTS
+4. Hosting target: Azure App Service (Linux recommended)
+
+### Required App Settings (Environment Variables)
+
+Add these in Azure App Service -> Configuration -> Application settings:
+
+- NEXT_PUBLIC_SUPABASE_URL
+- NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY
+- BLOG_ADMIN_PASSWORD
+- SUPABASE_SERVICE_ROLE_KEY (optional if your RLS policies allow anon write)
+
+### Deploy Notes
+
+- The app uses Next.js standalone output for production.
+- After deploy, restart the App Service once to apply environment variables.
