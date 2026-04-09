@@ -70,6 +70,7 @@ export default function Vlog() {
   const marqueeVlogs = shouldLoopMarquee
     ? [...displayedVlogs, ...displayedVlogs]
     : displayedVlogs;
+  const latestVisitDate = displayedVlogs[0]?.date || "Unknown Date";
 
   return (
     <section id="vlog" className="min-h-screen py-20 bg-black relative overflow-hidden">
@@ -144,13 +145,13 @@ export default function Vlog() {
               </div>
               <div className="group relative overflow-hidden rounded-xl border border-orange-500/25 bg-gray-950/60 p-4 text-center backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/50 hover:shadow-[0_10px_30px_rgba(249,115,22,0.15)]">
                 <div className="pointer-events-none absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-orange-500/80 to-red-600/80" />
-                <p className="text-lg font-bold text-orange-400">{displayedVlogs.length > 0 ? "Live" : "Waiting"}</p>
-                <p className="mt-1 text-xs tracking-[0.16em] text-[#c9b9a1] uppercase">Data Status</p>
+                <p className="text-lg font-bold text-orange-400">{latestVisitDate}</p>
+                <p className="mt-1 text-xs tracking-[0.16em] text-[#c9b9a1] uppercase">Latest Visit Date</p>
               </div>
               <div className="group relative overflow-hidden rounded-xl border border-orange-500/25 bg-gray-950/60 p-4 text-center backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/50 hover:shadow-[0_10px_30px_rgba(249,115,22,0.15)]">
                 <div className="pointer-events-none absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-orange-500/80 to-red-600/80" />
-                <p className="text-lg font-bold text-orange-400">Supabase</p>
-                <p className="mt-1 text-xs tracking-[0.16em] text-[#c9b9a1] uppercase">Source</p>
+                <p className="text-lg font-bold text-orange-400">{shouldLoopMarquee ? "Cinematic Loop" : "Spotlight Card"}</p>
+                <p className="mt-1 text-xs tracking-[0.16em] text-[#c9b9a1] uppercase">Showcase Mode</p>
               </div>
             </motion.div>
           </div>

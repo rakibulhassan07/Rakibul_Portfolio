@@ -49,3 +49,14 @@ Portfolio
 7. Open http://localhost:3000 in your browser.
 
 If the port is busy, stop the other process using that port and run npm run dev again.
+
+## Environment Variables
+
+Add these values in your local `.env.local` file:
+
+```bash
+BLOG_ADMIN_PASSWORD=your-admin-password
+IMGBB_API_KEY=your-imgbb-api-key
+```
+
+The admin panel drag-and-drop image uploader uses `IMGBB_API_KEY` on the server and auto-fills image URLs after upload.

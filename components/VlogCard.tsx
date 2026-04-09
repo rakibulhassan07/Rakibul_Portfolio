@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { VlogCardProps } from "@/types/vlog";
 
@@ -13,8 +14,45 @@ export default function VlogCard({
   date,
   index,
 }: VlogCardProps) {
+  const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
   const [imageFailed, setImageFailed] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  const handleExploreClick = async (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    if (isNavigating) return;
+
+    setIsNavigating(true);
+
+    try {
+      sessionStorage.setItem(
+        `vlog:preview:${id}`,
+        JSON.stringify({ id, image, location, description, date, galleryImages: [] })
+      );
+    } catch {
+      // Ignore session storage errors.
+    }
+
+    try {
+      const response = await fetch(`/api/vlogs/${id}`, { cache: "no-store" });
+      const body = (await response.json().catch(() => ({}))) as {
+        data?: unknown;
+      };
+
+      if (response.ok && body.data) {
+        try {
+          sessionStorage.setItem(`vlog:detail:${id}`, JSON.stringify(body.data));
+        } catch {
+          // Ignore session storage errors.
+        }
+      }
+    } catch {
+      // Continue navigation even if prefetch fails.
+    }
+
+    router.push(`/vlogs/${id}`);
+  };
 
   return (
     <motion.div
@@ -48,7 +86,16 @@ export default function VlogCard({
           ) : (
             <div className="h-full w-full bg-gradient-to-br from-gray-800 to-gray-950" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-80" />
+          <motion.div
+            className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10"
+            animate={{ opacity: isHovered ? 1 : 0.92 }}
+            transition={{ duration: 0.3 }}
+          />
+          <motion.div
+            className="absolute inset-0 bg-black/20 backdrop-blur-[1px]"
+            animate={{ opacity: isHovered ? 0.45 : 0.25 }}
+            transition={{ duration: 0.3 }}
+          />
           <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-red-600/10 mix-blend-overlay" />
 
           {/* Animated border glow on hover */}
@@ -67,13 +114,19 @@ export default function VlogCard({
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{
-              opacity: isHovered ? 1 : 0.8,
-              x: isHovered ? 0 : -20,
+              opacity: 1,
+              x: 0,
             }}
             transition={{ duration: 0.3 }}
             className="mb-3"
           >
-            <span className="inline-block px-3 py-1 text-xs font-semibold text-orange-400 bg-orange-500/20 backdrop-blur-sm rounded-full border border-orange-500/30">
+            <span
+              className={`inline-block rounded-full border px-3 py-1 text-xs font-semibold backdrop-blur-sm transition-colors ${
+                isHovered
+                  ? "border-orange-300/70 bg-orange-500/25 text-orange-100"
+                  : "border-orange-500/30 bg-orange-500/20 text-orange-300"
+              }`}
+            >
               {date}
             </span>
           </motion.div>
@@ -84,23 +137,10 @@ export default function VlogCard({
               y: isHovered ? -10 : 0,
             }}
             transition={{ duration: 0.3 }}
-            className="text-2xl md:text-3xl font-bold text-[#c9b9a1] mb-2"
+            className="mb-2 text-2xl font-bold text-[#d8cdbb] transition-colors [text-shadow:0_2px_10px_rgba(0,0,0,0.75)] md:text-3xl"
           >
             {location}
           </motion.h3>
-
-          {/* Description - Slide up on hover */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{
-              opacity: isHovered ? 1 : 0,
-              y: isHovered ? 0 : 20,
-            }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            className="text-[#c9b9a1] text-sm md:text-base leading-relaxed max-w-md"
-          >
-            {description}
-          </motion.p>
 
           {/* View More Button */}
           <motion.div
@@ -109,11 +149,12 @@ export default function VlogCard({
               opacity: isHovered ? 1 : 0,
               y: isHovered ? 0 : 20,
             }}
-            transition={{ duration: 0.3, delay: 0.15 }}
+            transition={{ duration: 0.3, delay: 0.1 }}
             className="mt-4"
           >
             <Link
               href={`/vlogs/${id}`}
+              onClick={handleExploreClick}
               className="inline-flex items-center gap-2 text-orange-500 text-sm font-semibold group-hover:gap-3 transition-all"
             >
               Explore
@@ -142,6 +183,15 @@ export default function VlogCard({
           }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
         />
+
+        {isNavigating ? (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-3 bg-black/70 backdrop-blur-sm">
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-orange-400/40 border-t-orange-400" />
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-orange-200">
+              Opening gallery...
+            </p>
+          </div>
+        ) : null}
       </motion.div>
     </motion.div>
   );

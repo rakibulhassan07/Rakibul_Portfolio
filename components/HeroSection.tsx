@@ -9,6 +9,7 @@ interface HeroSectionProps {
   title2?: string;
   subtitle?: string;
   buttonText?: string;
+  githubUrl?: string;
   onButtonClick?: () => void;
 }
 
@@ -27,18 +28,16 @@ export default function HeroSection({
   title1 = "Rakibul Hassan",
   title2 = "undergraduate Student",
   subtitle = "Passionate about building dynamic, user-friendly web applications with seamless front-end and back-end integration. Always eager to learn and contribute to innovative tech solutions",
-  buttonText = "View My Work",
+  buttonText = "Explore My GitHub",
+  githubUrl = "https://github.com/rakibulhassan07",
   onButtonClick,
 }: HeroSectionProps) {
   const handleButtonClick = () => {
     if (onButtonClick) {
       onButtonClick();
     } else {
-      // Default: scroll to projects section
-      const projectsSection = document.getElementById("projects");
-      if (projectsSection) {
-        projectsSection.scrollIntoView({ behavior: "smooth" });
-      }
+      // Default: open GitHub profile in a new tab.
+      window.open(githubUrl, "_blank", "noopener,noreferrer");
     }
   };
 

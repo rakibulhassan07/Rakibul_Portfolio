@@ -3,6 +3,14 @@
 import { useEffect, useMemo, useState } from "react";
 import type { VlogPost } from "@/types/vlog";
 
+type UploadApiResponse = {
+  data?: {
+    url?: string;
+    displayUrl?: string;
+  };
+  error?: string;
+};
+
 type FormState = {
   location: string;
   description: string;
@@ -37,6 +45,98 @@ interface BlogAdminPanelProps {
   onLogout: () => void;
 }
 
+interface DragDropImageFieldProps {
+  label: string;
+  value: string;
+  required?: boolean;
+  isUploading?: boolean;
+  onFileSelected: (file: File) => void;
+  onClear?: () => void;
+}
+
+function DragDropImageField({
+  label,
+  value,
+  required,
+  isUploading,
+  onFileSelected,
+  onClear,
+}: DragDropImageFieldProps) {
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  const pickFirstFile = (files: FileList | null) => {
+    const file = files?.[0];
+    if (!file) return;
+    onFileSelected(file);
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs uppercase tracking-[0.14em] text-[#b8a88a]">{label}</p>
+        {value && onClear ? (
+          <button
+            type="button"
+            onClick={onClear}
+            className="text-xs text-red-300 transition-colors hover:text-red-200"
+          >
+            Remove
+          </button>
+        ) : null}
+      </div>
+
+      <label
+        onDragOver={(e) => {
+          e.preventDefault();
+          if (!isUploading) setIsDragOver(true);
+        }}
+        onDragLeave={() => setIsDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setIsDragOver(false);
+          if (isUploading) return;
+          pickFirstFile(e.dataTransfer.files);
+        }}
+        className={`flex min-h-[110px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed px-4 py-3 text-center transition-colors ${
+          isDragOver
+            ? "border-orange-400 bg-orange-500/10"
+            : "border-gray-700 bg-black/35 hover:border-orange-500/45"
+        }`}
+      >
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          disabled={isUploading}
+          onChange={(e) => pickFirstFile(e.target.files)}
+          required={required && !value}
+        />
+        <span className="text-sm text-[#c9b9a1]">
+          {isUploading ? "Uploading..." : "Drag and drop image or click"}
+        </span>
+        <span className="mt-1 text-xs text-[#9f9074]">Auto creates ImgBB link</span>
+      </label>
+
+      {value ? (
+        <div className="flex h-24 w-full items-center justify-center rounded-lg border border-gray-800 bg-black/45 p-1">
+          <img
+            src={value}
+            alt={`${label} preview`}
+            className="max-h-full max-w-full rounded object-contain"
+          />
+        </div>
+      ) : null}
+
+      <input
+        value={value}
+        readOnly
+        className="w-full rounded-lg border border-gray-800 bg-black/60 px-4 py-3 text-[#9f9074] outline-none"
+        placeholder="Image link will be generated automatically"
+      />
+    </div>
+  );
+}
+
 export default function BlogAdminPanel({ adminPassword, onLogout }: BlogAdminPanelProps) {
   const [posts, setPosts] = useState<VlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,8 +144,13 @@ export default function BlogAdminPanel({ adminPassword, onLogout }: BlogAdminPan
   const [message, setMessage] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(initialForm);
+  const [uploadingSlots, setUploadingSlots] = useState<Record<string, boolean>>({});
 
   const isEditing = useMemo(() => Boolean(editingId), [editingId]);
+  const isAnyUploadInProgress = useMemo(
+    () => Object.values(uploadingSlots).some(Boolean),
+    [uploadingSlots]
+  );
 
   const notifyVlogUpdated = () => {
     if (typeof window === "undefined") return;
@@ -77,6 +182,42 @@ export default function BlogAdminPanel({ adminPassword, onLogout }: BlogAdminPan
   const resetForm = () => {
     setForm(initialForm);
     setEditingId(null);
+    setUploadingSlots({});
+  };
+
+  const setUploadingState = (slot: string, uploading: boolean) => {
+    setUploadingSlots((prev) => ({ ...prev, [slot]: uploading }));
+  };
+
+  const uploadImage = async (slot: string, file: File, onSuccess: (url: string) => void) => {
+    setUploadingState(slot, true);
+    setMessage("");
+
+    try {
+      const payload = new FormData();
+      payload.append("file", file);
+
+      const res = await fetch("/api/admin/upload-image", {
+        method: "POST",
+        headers: {
+          "x-admin-password": adminPassword,
+        },
+        body: payload,
+      });
+
+      const body = (await res.json().catch(() => ({}))) as UploadApiResponse;
+      if (!res.ok || !body.data?.url) {
+        setMessage(body.error ?? "Failed to upload image");
+        return;
+      }
+
+      onSuccess(body.data.url);
+      setMessage("Image uploaded successfully.");
+    } catch {
+      setMessage("Failed to upload image");
+    } finally {
+      setUploadingState(slot, false);
+    }
   };
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -202,12 +343,15 @@ export default function BlogAdminPanel({ adminPassword, onLogout }: BlogAdminPan
               placeholder="Location / Title"
               required
             />
-            <input
+            <DragDropImageField
+              label="Hero Image"
               value={form.image}
-              onChange={(e) => setForm((prev) => ({ ...prev, image: e.target.value }))}
-              className="rounded-lg border border-gray-800 bg-black/60 px-4 py-3 outline-none focus:border-orange-500"
-              placeholder="Image URL"
               required
+              isUploading={Boolean(uploadingSlots.hero)}
+              onFileSelected={(file) =>
+                uploadImage("hero", file, (url) => setForm((prev) => ({ ...prev, image: url })))
+              }
+              onClear={() => setForm((prev) => ({ ...prev, image: "" }))}
             />
             <input
               type="date"
@@ -225,29 +369,48 @@ export default function BlogAdminPanel({ adminPassword, onLogout }: BlogAdminPan
 
             <div className="md:col-span-2 grid grid-cols-1 gap-3 md:grid-cols-2">
               {form.galleryImages.map((value, index) => (
-                <input
+                <DragDropImageField
                   key={index}
+                  label={`Vlog Image ${index + 1}`}
                   value={value}
-                  onChange={(e) =>
+                  isUploading={Boolean(uploadingSlots[`gallery-${index}`])}
+                  onFileSelected={(file) =>
+                    uploadImage(`gallery-${index}`, file, (url) =>
+                      setForm((prev) => {
+                        const nextImages = [...prev.galleryImages];
+                        nextImages[index] = url;
+                        return { ...prev, galleryImages: nextImages };
+                      })
+                    )
+                  }
+                  onClear={() =>
                     setForm((prev) => {
                       const nextImages = [...prev.galleryImages];
-                      nextImages[index] = e.target.value;
+                      nextImages[index] = "";
                       return { ...prev, galleryImages: nextImages };
                     })
                   }
-                  className="rounded-lg border border-gray-800 bg-black/60 px-4 py-3 outline-none focus:border-orange-500"
-                  placeholder={`Tour image ${index + 1} URL`}
                 />
               ))}
             </div>
 
+            <p className="md:col-span-2 text-xs text-[#9f9074]">
+              No need to type URLs. Just drop image files and links are generated automatically.
+            </p>
+
             <div className="md:col-span-2 flex flex-wrap gap-3">
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isAnyUploadInProgress}
                 className="rounded-lg bg-gradient-to-r from-orange-500 to-red-600 px-5 py-2.5 font-semibold text-white disabled:opacity-60"
               >
-                {isSubmitting ? "Saving..." : isEditing ? "Update Post" : "Add Post"}
+                {isSubmitting
+                  ? "Saving..."
+                  : isAnyUploadInProgress
+                    ? "Uploading..."
+                    : isEditing
+                      ? "Update Post"
+                      : "Add Post"}
               </button>
               {isEditing ? (
                 <button

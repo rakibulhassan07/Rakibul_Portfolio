@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import type { VlogPost } from "@/types/vlog";
 
 type ApiResponse = {
@@ -16,10 +16,32 @@ export default function VlogDetailsPage() {
   const [post, setPost] = useState<VlogPost | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activeImage, setActiveImage] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!params.id) return;
+
+    let hasCachedData = false;
+
+    try {
+      const cachedDetail = sessionStorage.getItem(`vlog:detail:${params.id}`);
+      const cachedPreview = sessionStorage.getItem(`vlog:preview:${params.id}`);
+      const cachedRaw = cachedDetail || cachedPreview;
+
+      if (cachedRaw) {
+        const cachedData = JSON.parse(cachedRaw) as VlogPost;
+        if (cachedData?.id || cachedData?.image || cachedData?.location) {
+          setPost(cachedData);
+          hasCachedData = true;
+        }
+      }
+    } catch {
+      // Ignore storage parse errors and continue API load.
+    }
+
+    setIsLoading(!hasCachedData);
+
     const loadPost = async () => {
-      setIsLoading(true);
       setError("");
 
       try {
@@ -28,30 +50,75 @@ export default function VlogDetailsPage() {
 
         if (!response.ok || !body.data) {
           setError(body.error ?? "Tour not found");
-          setPost(null);
+          if (!hasCachedData) {
+            setPost(null);
+          }
           return;
         }
 
         setPost(body.data);
+
+        try {
+          sessionStorage.setItem(`vlog:detail:${params.id}`, JSON.stringify(body.data));
+        } catch {
+          // Ignore storage errors.
+        }
       } catch {
         setError("Failed to load tour details");
-        setPost(null);
+        if (!hasCachedData) {
+          setPost(null);
+        }
       } finally {
         setIsLoading(false);
       }
     };
 
-    if (params.id) {
-      loadPost();
-    }
+    loadPost();
   }, [params.id]);
 
   const galleryImages = useMemo(() => {
     if (!post) return [];
 
-    const images = [post.image, ...(post.galleryImages ?? [])].filter(Boolean);
+    const images = (post.galleryImages ?? []).filter(Boolean);
     return Array.from(new Set(images)).slice(0, 6);
   }, [post]);
+
+  const galleryContainerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.06,
+        delayChildren: 0.04,
+      },
+    },
+  };
+
+  const galleryCardVariants = {
+    hidden: { opacity: 0, y: 18, scale: 0.985 },
+    show: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.42,
+        ease: [0.22, 1, 0.36, 1] as const,
+      },
+    },
+  };
+
+  useEffect(() => {
+    if (!activeImage) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setActiveImage(null);
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [activeImage]);
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-black px-4 py-10 text-[#c9b9a1] sm:px-6 lg:px-8">
@@ -110,9 +177,9 @@ export default function VlogDetailsPage() {
             </div>
 
             <div className="relative min-h-[260px] overflow-hidden border-t border-orange-500/20 lg:min-h-full lg:border-l lg:border-t-0">
-              {galleryImages[0] ? (
+              {post?.image ? (
                 <img
-                  src={galleryImages[0]}
+                  src={post.image}
                   alt={`${post?.location || "Tour"} cover`}
                   className="h-full w-full object-cover"
                   loading="lazy"
@@ -186,34 +253,74 @@ export default function VlogDetailsPage() {
                   <p className="text-sm text-[#b8a88a]">No images found for this tour yet.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+                <motion.div
+                  variants={galleryContainerVariants}
+                  initial="hidden"
+                  animate="show"
+                  className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
+                >
                   {galleryImages.map((imageUrl, index) => (
                     <motion.figure
                       key={`${imageUrl}-${index}`}
-                      initial={{ opacity: 0, y: 24 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.45, delay: 0.1 + index * 0.07 }}
-                      whileHover={{ y: -6, scale: 1.01 }}
-                      className="group relative overflow-hidden rounded-2xl border border-orange-500/20 bg-[#101010] p-2 shadow-[0_12px_32px_rgba(0,0,0,0.35)]"
+                      variants={galleryCardVariants}
+                      whileHover={{ y: -5, scale: 1.012 }}
+                      transition={{ type: "spring", stiffness: 240, damping: 22 }}
+                      onClick={() => setActiveImage(imageUrl)}
+                      className="group relative overflow-hidden rounded-2xl border border-orange-500/20 bg-[#101010] p-2 shadow-[0_10px_28px_rgba(0,0,0,0.3)]"
                     >
                       <img
                         src={imageUrl}
                         alt={`${post.location} photo ${index + 1}`}
-                        className="h-60 w-full rounded-xl object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="h-60 w-full rounded-xl object-cover transition-all duration-500 group-hover:scale-[1.04] group-hover:brightness-110"
                         loading="lazy"
                         decoding="async"
                       />
+                      <div className="pointer-events-none absolute inset-2 rounded-xl border border-orange-300/0 transition-all duration-300 group-hover:border-orange-300/30" />
                       <div className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                       <div className="absolute bottom-4 left-4 rounded-full border border-orange-500/35 bg-black/55 px-3 py-1 text-xs uppercase tracking-[0.14em] text-orange-200">
                         Frame {index + 1}
                       </div>
                     </motion.figure>
                   ))}
-                </div>
+                </motion.div>
               )}
             </section>
           </>
         ) : null}
+
+        <AnimatePresence>
+          {activeImage ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setActiveImage(null)}
+              className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 sm:p-8"
+            >
+              <button
+                type="button"
+                onClick={() => setActiveImage(null)}
+                className="absolute right-4 top-4 rounded-full border border-orange-500/40 bg-black/50 px-3 py-1.5 text-sm font-semibold text-orange-300 transition-colors hover:bg-orange-500/15"
+              >
+                Close
+              </button>
+
+              <motion.img
+                initial={{ scale: 0.96, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.98, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                src={activeImage}
+                alt={`${post?.location || "Tour"} full frame`}
+                onClick={(event) => event.stopPropagation()}
+                className="max-h-[90vh] w-auto max-w-[95vw] rounded-xl object-contain shadow-[0_20px_60px_rgba(0,0,0,0.55)]"
+                loading="eager"
+                decoding="async"
+              />
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       </div>
     </main>
   );
