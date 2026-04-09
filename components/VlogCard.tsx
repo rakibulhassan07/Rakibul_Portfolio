@@ -82,7 +82,7 @@ export default function VlogCard({
               y: isHovered ? -10 : 0,
             }}
             transition={{ duration: 0.3 }}
-            className="text-2xl md:text-3xl font-bold text-white mb-2"
+            className="text-2xl md:text-3xl font-bold text-[#c9b9a1] mb-2"
           >
             {location}
           </motion.h3>
