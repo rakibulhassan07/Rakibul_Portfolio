@@ -13,7 +13,7 @@ export default function Academic() {
       completed: false,
     },
     {
-      degree: "Higher Secondary",
+      degree: "Higherlll Secondary",
       institution: "Bandarban Cantonment Public School and College",
       period: "2018 - 2020",
       description: "Science",
