@@ -87,16 +87,16 @@ function DragDropImageField({
       </div>
 
       <label
-        onDragOver={(e) => {
-          e.preventDefault();
+        onDragOver={(event) => {
+          event.preventDefault();
           if (!isUploading) setIsDragOver(true);
         }}
         onDragLeave={() => setIsDragOver(false)}
-        onDrop={(e) => {
-          e.preventDefault();
+        onDrop={(event) => {
+          event.preventDefault();
           setIsDragOver(false);
           if (isUploading) return;
-          pickFirstFile(e.dataTransfer.files);
+          pickFirstFile(event.dataTransfer.files);
         }}
         className={`flex min-h-[110px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed px-4 py-3 text-center transition-colors ${
           isDragOver
@@ -109,14 +109,21 @@ function DragDropImageField({
           accept="image/*"
           className="hidden"
           disabled={isUploading}
-          onChange={(e) => pickFirstFile(e.target.files)}
+          onChange={(event) => pickFirstFile(event.target.files)}
           required={required && !value}
         />
         <span className="text-sm text-[#c9b9a1]">
           {isUploading ? "Uploading..." : "Drag and drop image or click"}
         </span>
-        <span className="mt-1 text-xs text-[#9f9074]">Auto creates ImgBB link</span>
+        <span className="mt-1 text-xs text-[#9f9074]">Original image uploads to ImgBB</span>
       </label>
+
+      <input
+        value={value}
+        readOnly
+        className="w-full rounded-lg border border-gray-800 bg-black/60 px-4 py-3 text-[#9f9074] outline-none"
+        placeholder="Image link will be generated automatically"
+      />
 
       {value ? (
         <div className="flex h-24 w-full items-center justify-center rounded-lg border border-gray-800 bg-black/45 p-1">
@@ -127,13 +134,6 @@ function DragDropImageField({
           />
         </div>
       ) : null}
-
-      <input
-        value={value}
-        readOnly
-        className="w-full rounded-lg border border-gray-800 bg-black/60 px-4 py-3 text-[#9f9074] outline-none"
-        placeholder="Image link will be generated automatically"
-      />
     </div>
   );
 }
@@ -362,7 +362,7 @@ export default function BlogAdminPanel({ adminPassword, onLogout }: BlogAdminPan
               type="date"
               value={form.date}
               onChange={(e) => setForm((prev) => ({ ...prev, date: e.target.value }))}
-              className="rounded-lg border border-gray-800 bg-black/60 px-4 py-3 outline-none focus:border-orange-500"
+              className="rounded-lg border border-gray-800 bg-black/60 px-4 py-3 pr-10 text-[#c9b9a1] outline-none [color-scheme:dark] focus:border-orange-500 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-100 [&::-webkit-calendar-picker-indicator]:[filter:invert(58%)_sepia(87%)_saturate(1490%)_hue-rotate(354deg)_brightness(101%)_contrast(101%)]"
             />
             <textarea
               value={form.description}
@@ -400,7 +400,7 @@ export default function BlogAdminPanel({ adminPassword, onLogout }: BlogAdminPan
             </div>
 
             <p className="md:col-span-2 text-xs text-[#9f9074]">
-              No need to type URLs. Just drop image files and links are generated automatically.
+              Drag and drop or click to upload original images. URLs are generated automatically.
             </p>
 
             <div className="md:col-span-2 flex flex-wrap gap-3">
