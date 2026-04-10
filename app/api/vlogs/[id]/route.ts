@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { isValidPassword } from "@/lib/adminAuth";
 import { createServerClient } from "@/utils/supabase/server";
 
-const normalizeGalleryImages = (galleryImages?: string[]) => {
+const normalizeImageUrl = (value?: string) => (value ?? "").trim();
+
+const normalizeGalleryImages = (galleryImages?: string[], heroImage?: string) => {
+  const hero = normalizeImageUrl(heroImage);
   return (galleryImages ?? [])
     .map((image) => image.trim())
     .filter(Boolean)
+    .filter((image) => image !== hero)
     .slice(0, 6);
 };
 
@@ -56,7 +60,10 @@ export async function GET(
       description: data.description,
       image: data.image_url,
       date: data.visit_date,
-      galleryImages: (galleryRows ?? []).map((row) => row.image_url),
+      galleryImages: normalizeGalleryImages(
+        (galleryRows ?? []).map((row) => row.image_url),
+        data.image_url
+      ),
       tall: Boolean(data.tall),
       created_at: data.created_at,
     },
@@ -108,7 +115,7 @@ export async function PUT(
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    const galleryImages = normalizeGalleryImages(body.galleryImages);
+    const galleryImages = normalizeGalleryImages(body.galleryImages, body.image);
 
     const { error: deleteGalleryError } = await supabase
       .from("vlog_images")

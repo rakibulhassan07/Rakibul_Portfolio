@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { isValidPassword } from "@/lib/adminAuth";
 import { createServerClient } from "@/utils/supabase/server";
 
-const normalizeGalleryImages = (galleryImages?: string[]) => {
+const normalizeImageUrl = (value?: string) => (value ?? "").trim();
+
+const normalizeGalleryImages = (galleryImages?: string[], heroImage?: string) => {
+  const hero = normalizeImageUrl(heroImage);
   return (galleryImages ?? [])
     .map((image) => image.trim())
     .filter(Boolean)
+    .filter((image) => image !== hero)
     .slice(0, 6);
 };
 
@@ -89,7 +93,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const galleryImages = normalizeGalleryImages(body.galleryImages);
+    const galleryImages = normalizeGalleryImages(body.galleryImages, body.image);
     if (galleryImages.length > 0) {
       const { error: galleryError } = await supabase.from("vlog_images").insert(
         galleryImages.map((imageUrl, index) => ({

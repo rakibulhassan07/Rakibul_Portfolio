@@ -79,8 +79,9 @@ export default function VlogDetailsPage() {
   const galleryImages = useMemo(() => {
     if (!post) return [];
 
+    const heroImage = (post.image ?? "").trim();
     const images = (post.galleryImages ?? []).filter(Boolean);
-    return Array.from(new Set(images)).slice(0, 6);
+    return Array.from(new Set(images)).filter((image) => image !== heroImage).slice(0, 6);
   }, [post]);
 
   const galleryContainerVariants = {
