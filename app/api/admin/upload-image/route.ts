@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isValidPassword } from "@/lib/adminAuth";
 
-const MAX_FILE_SIZE_BYTES = 32 * 1024 * 1024;
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
   const adminPassword = request.headers.get("x-admin-password") || "";
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
       return NextResponse.json(
-        { error: "Image is too large. Maximum size is 32MB." },
+        { error: "Image is too large. Maximum size is 10MB." },
         { status: 400 }
       );
     }
