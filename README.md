@@ -57,6 +57,7 @@ Add these values in your local `.env.local` file:
 ```bash
 BLOG_ADMIN_PASSWORD=your-admin-password
 IMGBB_API_KEY=your-imgbb-api-key
+NEXT_PUBLIC_IMGBB_API_KEY=your-imgbb-api-key
 ```
 
-The admin panel drag-and-drop image uploader uses `IMGBB_API_KEY` on the server and auto-fills image URLs after upload.
+The admin panel drag-and-drop image uploader uses `NEXT_PUBLIC_IMGBB_API_KEY` in the browser to upload directly to ImgBB and auto-fills image URLs after upload.

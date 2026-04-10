@@ -6,78 +6,10 @@ import type { VlogPost } from "@/types/vlog";
 type UploadApiResponse = {
   data?: {
     url?: string;
-    displayUrl?: string;
+    display_url?: string;
   };
-  error?: string;
-};
-
-const DEPLOY_SAFE_UPLOAD_LIMIT_BYTES = 10 * 1024 * 1024;
-const TARGET_COMPRESSED_SIZE_BYTES = Math.floor(9 * 1024 * 1024);
-const MAX_IMAGE_DIMENSION = 1920;
-
-const readImageAsBitmap = async (file: File) => {
-  const dataUrl = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(typeof reader.result === "string" ? reader.result : "");
-    reader.onerror = () => reject(new Error("Failed to read image"));
-    reader.readAsDataURL(file);
-  });
-
-  return new Promise<HTMLImageElement>((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error("Failed to decode image"));
-    image.src = dataUrl;
-  });
-};
-
-const canvasToBlob = (canvas: HTMLCanvasElement, quality: number) =>
-  new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          reject(new Error("Failed to encode image"));
-          return;
-        }
-        resolve(blob);
-      },
-      "image/jpeg",
-      quality
-    );
-  });
-
-const compressImageForUpload = async (file: File) => {
-  if (file.size <= DEPLOY_SAFE_UPLOAD_LIMIT_BYTES) {
-    return file;
-  }
-
-  const image = await readImageAsBitmap(file);
-  const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(image.width, image.height));
-  const width = Math.max(1, Math.round(image.width * scale));
-  const height = Math.max(1, Math.round(image.height * scale));
-
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-
-  const context = canvas.getContext("2d");
-  if (!context) {
-    throw new Error("Failed to prepare image canvas");
-  }
-
-  context.drawImage(image, 0, 0, width, height);
-
-  let quality = 0.86;
-  let bestBlob = await canvasToBlob(canvas, quality);
-  while (bestBlob.size > TARGET_COMPRESSED_SIZE_BYTES && quality > 0.45) {
-    quality -= 0.08;
-    bestBlob = await canvasToBlob(canvas, quality);
-  }
-
-  return new File([bestBlob], `${file.name.replace(/\.[^/.]+$/, "")}.jpg`, {
-    type: "image/jpeg",
-    lastModified: Date.now(),
-  });
+  error?: string | { message?: string };
+  success?: boolean;
 };
 
 type FormState = {
@@ -263,26 +195,24 @@ export default function BlogAdminPanel({ adminPassword, onLogout }: BlogAdminPan
     setMessage("");
 
     try {
-      const processedFile = await compressImageForUpload(file);
-      const payload = new FormData();
-      payload.append("file", processedFile);
-
-      const res = await fetch("/api/admin/upload-image", {
-        method: "POST",
-        headers: {
-          "x-admin-password": adminPassword,
-        },
-        body: payload,
-      });
-
-      if (res.status === 413) {
-        setMessage("Image is still too large for deployment upload limit. Please use a smaller image.");
+      const publicApiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+      if (!publicApiKey) {
+        setMessage("Missing NEXT_PUBLIC_IMGBB_API_KEY. Add it to deploy and local environment variables.");
         return;
       }
 
+      const payload = new FormData();
+      payload.append("image", file);
+      payload.append("name", file.name.replace(/\.[^/.]+$/, ""));
+
+      const res = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(publicApiKey)}`, {
+        method: "POST",
+        body: payload,
+      });
+
       const body = (await res.json().catch(() => ({}))) as UploadApiResponse;
-      if (!res.ok || !body.data?.url) {
-        setMessage(body.error ?? "Failed to upload image");
+      if (!res.ok || !body.success || !body.data?.url) {
+        setMessage(typeof body.error === "string" ? body.error : body.error?.message ?? "Failed to upload image");
         return;
       }
 
