@@ -35,7 +35,7 @@ export default function SplashScreen({ onStart }: SplashScreenProps) {
           Welcome
         </p>
         <h1 className="text-3xl uppercase sm:text-4xl md:text-5xl font-semibold text-[#f2e7d8] mb-3">
-          Welcome to My Portfolio
+          Welcome To My Portfolio
         </h1>
         <p className="text-sm  sm:text-base text-[#c9b9a1]/80 max-w-xl mx-auto">
           Start To Enter The Site and Explore My Work.
