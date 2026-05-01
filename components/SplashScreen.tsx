@@ -23,8 +23,25 @@ export default function SplashScreen({ onStart }: SplashScreenProps) {
       initial={{ opacity: 1 }}
       animate={{ opacity: isExiting ? 0 : 1 }}
       transition={{ duration: 0.8 }}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black px-4"
     >
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0.35, ease: "easeOut" }}
+        className="mb-10 text-center"
+      >
+        <p className="text-sm md:text-base uppercase tracking-[0.45em] text-[#c9b9a1]/70 mb-3">
+          Welcome
+        </p>
+        <h1 className="text-3xl uppercase sm:text-4xl md:text-5xl font-semibold text-[#f2e7d8] mb-3">
+          Welcome to My Portfolio
+        </h1>
+        <p className="text-sm  sm:text-base text-[#c9b9a1]/80 max-w-xl mx-auto">
+          Start To Enter The Site and Explore My Work.
+        </p>
+      </motion.div>
+
       {/* Logo/Icon */}
       <motion.div
         initial={{ scale: 0, opacity: 0 }}
@@ -104,7 +121,7 @@ export default function SplashScreen({ onStart }: SplashScreenProps) {
         
         {/* Button text */}
         <span className="relative z-10 group-hover:text-black transition-colors duration-300">
-          START
+          Start
         </span>
       </motion.button>
 
